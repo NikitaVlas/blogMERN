@@ -8,7 +8,7 @@ export const register = async (req, res) => {
         const {username, password} = req.body
 
         const isUsed = await User.findOne({username})
-        if(isUsed) {
+        if (isUsed) {
             return res.json({
                 message: 'This username already in use'
             })
@@ -17,7 +17,7 @@ export const register = async (req, res) => {
         const salt = bcrypt.genSaltSync(10) //сложность хешироного пароля
         const hash = bcrypt.hashSync(password, salt)
 
-        const newUser = new User ({
+        const newUser = new User({
             username,
             password: hash
         })
@@ -28,7 +28,7 @@ export const register = async (req, res) => {
             newUser, message: 'Registration completed successfully'
         })
 
-    } catch (error){
+    } catch (error) {
         res.json({message: 'Error creating user'})
     }
 }
@@ -36,16 +36,16 @@ export const register = async (req, res) => {
 // Login
 export const login = async (req, res) => {
     try {
-        const{username, password} = req.body
+        const {username, password} = req.body
         const user = await User.findOne({username})
-        if(!user) {
+        if (!user) {
             return res.json({
                 message: "This user doesn't exist"
             })
         }
 
         const isPasswordCorrect = await bcrypt.compare(password, user.password)
-        if(!isPasswordCorrect) {
+        if (!isPasswordCorrect) {
             return res.json({
                 message: "Incorrect password"
             })
@@ -53,8 +53,8 @@ export const login = async (req, res) => {
 
         // шифруем токен
         const token = jwt.sign({
-            id: user._id,
-        },
+                id: user._id,
+            },
             process.env.JWT_SECRET,
             {expiresIn: "30d"}
         )
@@ -63,15 +63,33 @@ export const login = async (req, res) => {
             token, user, message: "You are logged in"
         })
 
-    } catch (error){
+    } catch (error) {
         res.json({message: 'Authorisation Error '})
     }
 }
 //Get me
 export const getMe = async (req, res) => {
     try {
+        const user = await User.findById(req.userId)
 
-    } catch (error){
+        if (!user) {
+            return res.json({
+                message: "This user doesn't exist"
+            })
+        }
 
+        const token = jwt.sign({
+                id: user._id,
+            },
+            process.env.JWT_SECRET,
+            {expiresIn: "30d"}
+        )
+
+        res.json({
+            user,
+            token
+        })
+    } catch (error) {
+        res.json({message: "No access"})
     }
 }

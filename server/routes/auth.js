@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { register, login, getMe } from '../controllers/auth.js'
-// import { checkAuth } from '../utils/checkAuth.js'
+import { checkAuth } from '../utils/checkAuth.js'
 const router = new Router()
 
 // Register
@@ -13,6 +13,6 @@ router.post('/login', login)
 
 // Get Me
 // http://localhost:3002/api/auth/me
-router.get('/me', getMe)
+router.get('/me', checkAuth,getMe)
 
 export default router

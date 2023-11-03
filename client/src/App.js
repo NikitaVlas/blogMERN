@@ -4,11 +4,20 @@ import MainPage from "./pages/MainPage";
 import PostPage from "./pages/PostPage";
 import PostsPage from "./pages/PostsPage";
 import AddPostPage from "./pages/AddPostPage";
-import RegisterPage from "./pages/RegisterPage";
-import LoginPage from "./pages/LoginPage";
+import {RegisterPage} from "./pages/RegisterPage";
+import {LoginPage} from "./pages/LoginPage";
 import EditPostPage from "./pages/EditPostPage";
+import {useDispatch} from "react-redux";
+import {useEffect} from "react";
+import {getMe} from "./redux/features/auth/authSlice";
 
 function App() {
+    const dispatch = useDispatch()
+
+    useEffect(() => {
+        dispatch(getMe())
+    }, [dispatch])
+
     return (
         <Layout>
             <Routes>

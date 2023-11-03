@@ -2,94 +2,109 @@ import User from '../models/User.js'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 
-//Register
+// Register user
 export const register = async (req, res) => {
     try {
-        const {username, password} = req.body
+        const { username, password } = req.body
 
-        const isUsed = await User.findOne({username})
+        const isUsed = await User.findOne({ username })
+
         if (isUsed) {
             return res.json({
-                message: 'This username already in use'
+                message: 'Данный username уже занят.',
             })
         }
 
-        const salt = bcrypt.genSaltSync(10) //сложность хешироного пароля
+        const salt = bcrypt.genSaltSync(10)
         const hash = bcrypt.hashSync(password, salt)
 
         const newUser = new User({
             username,
-            password: hash
+            password: hash,
         })
+
+        const token = jwt.sign(
+            {
+                id: newUser._id,
+            },
+            process.env.JWT_SECRET,
+            { expiresIn: '30d' },
+        )
 
         await newUser.save()
 
         res.json({
-            newUser, message: 'Registration completed successfully'
+            newUser,
+            token,
+            message: 'Регистрация прошла успешно.',
         })
-
     } catch (error) {
-        res.json({message: 'Error creating user'})
+        res.json({ message: 'Ошибка при создании пользователя.' })
     }
 }
 
-// Login
+// Login user
 export const login = async (req, res) => {
     try {
-        const {username, password} = req.body
-        const user = await User.findOne({username})
+        const { username, password } = req.body
+        const user = await User.findOne({ username })
+
         if (!user) {
             return res.json({
-                message: "This user doesn't exist"
+                message: 'Такого юзера не существует.',
             })
         }
 
         const isPasswordCorrect = await bcrypt.compare(password, user.password)
+
         if (!isPasswordCorrect) {
             return res.json({
-                message: "Incorrect password"
+                message: 'Неверный пароль.',
             })
         }
 
-        // шифруем токен
-        const token = jwt.sign({
+        const token = jwt.sign(
+            {
                 id: user._id,
             },
             process.env.JWT_SECRET,
-            {expiresIn: "30d"}
+            { expiresIn: '30d' },
         )
 
         res.json({
-            token, user, message: "You are logged in"
+            token,
+            user,
+            message: 'Вы вошли в систему.',
         })
-
     } catch (error) {
-        res.json({message: 'Authorisation Error '})
+        res.json({ message: 'Ошибка при авторизации.' })
     }
 }
-//Get me
+
+// Get Me
 export const getMe = async (req, res) => {
     try {
         const user = await User.findById(req.userId)
 
         if (!user) {
             return res.json({
-                message: "This user doesn't exist"
+                message: 'Такого юзера не существует.',
             })
         }
 
-        const token = jwt.sign({
+        const token = jwt.sign(
+            {
                 id: user._id,
             },
             process.env.JWT_SECRET,
-            {expiresIn: "30d"}
+            { expiresIn: '30d' },
         )
 
         res.json({
             user,
-            token
+            token,
         })
     } catch (error) {
-        res.json({message: "No access"})
+        res.json({ message: 'Нет доступа.' })
     }
 }

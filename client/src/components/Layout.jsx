@@ -1,10 +1,16 @@
 import React from 'react';
+import Navbar from "./Navbar";
 
-const Layout = () => {
+const Layout = ({children}) => {
     return (
-        <div>
+        <React.Fragment>
+            <div>
+                <Navbar/>
+                {children}
+            </div>
+        </React.Fragment>
             
-        </div>
+
     );
 };
 

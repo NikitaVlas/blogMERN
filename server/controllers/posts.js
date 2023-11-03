@@ -1,13 +1,14 @@
 import Post from '../models/Post.js'
 import User from '../models/User.js'
-import path, {dirname} from 'path'
-import {fileURLToPath} from 'url'
+import path, { dirname } from 'path'
+import { fileURLToPath } from 'url'
 
-//Create Post
+// Create Post
 export const createPost = async (req, res) => {
     try {
-        const {title, text} = req.body
-        const user = await User.findById(req.userId)
+        const { title, text } = req.body
+        const user = await User.findOne(req.userId)
+
 
         if(req.files){
             let fileName = Date.now().toString() + req.files.image.name // даем имя файлу
@@ -19,30 +20,30 @@ export const createPost = async (req, res) => {
                 title,
                 text,
                 imgUrl: fileName,
-                author: req.userId
+                author: req.userId,
             })
 
             await newPostWithImage.save()
             await User.findByIdAndUpdate(req.userId, {
-                $push: {posts: newPostWithImage}
+                $push: { posts: newPostWithImage },
             })
+
             return res.json(newPostWithImage)
         }
 
-        const newPostWithoutImage = new Post ({
+        const newPostWithoutImage = new Post({
             username: user.username,
             title,
             text,
             imgUrl: '',
-            author: req.userId
+            author: req.userId,
         })
         await newPostWithoutImage.save()
         await User.findByIdAndUpdate(req.userId, {
-            $push: {posts: newPostWithoutImage}
+            $push: { posts: newPostWithoutImage },
         })
-        return res.json(newPostWithoutImage)
-
+        res.json(newPostWithoutImage)
     } catch (error) {
-        res.json({message: "Что-то пошло не так"})
+        res.json({ message: 'Что-то пошло не так.' })
     }
 }
